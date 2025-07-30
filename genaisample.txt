@@ -1,0 +1,151 @@
+Text Summarization Sample  code:
+ 
+ 
+from transformers import pipeline
+ 
+def summarize_text(text):
+
+    # Initialize the summarization pipeline
+
+    summarizer = pipeline('summarization', model='facebook/bart-large-cnn')
+ 
+    # Summarize the text
+
+    summary = summarizer(text, max_length=100, min_length=25, do_sample=False)
+ 
+    # Return the summarized text
+
+    return summary[0]['summary_text']
+ 
+# Define the path to the text file
+
+file_path = input("Enter the path to the text file: ")
+ 
+try:
+
+    # Read the contents of the text file
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+
+        text = file.read()
+ 
+    # Ensure the text is not empty
+
+    if not text.strip():
+
+        print("The file is empty.")
+
+    else:
+
+        # Summarize the text
+
+        summary = summarize_text(text)
+ 
+        # Print the summarized text
+
+        print("Summarized Text:\n")
+
+        print(summary)
+ 
+except FileNotFoundError:
+
+    print(f"Error: The file at {file_path} was not found.")
+
+
+
+
+
+
+
+
+
+ 
+#Question Answer(RAG) Sample Code:
+ 
+from transformers import pipeline
+ 
+context="""
+
+Earth is the third planet from the Sun and the only astronomical object
+
+known to harbor life. While large volumes of water can be found
+
+throughout the Solar System, only Earth sustains liquid surface water.
+
+About 71% of Earth's surface is made up of the ocean, dwarfing
+
+Earth's polar ice, lakes, and rivers. The remaining 29% of Earth's
+
+surface is land, consisting of continents and islands.
+
+Earth's surface layer is formed of several slowly moving tectonic plates,
+
+interacting to produce mountain ranges, volcanoes, and earthquakes.
+
+Earth's liquid outer core generates the magnetic field that shapes Earth's
+
+magnetosphere, deflecting destructive solar winds.
+
+"""
+ 
+quan_pipeline = pipeline("question-answering",
+
+                         model="deepset/minilm-uncased-squad2")
+ 
+answer=quan_pipeline(question="How much of earth is land?",
+
+             context=context)
+
+print(answer)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import groq
+ 
+def code_generator(prompt):
+    # Directly input the API key
+    api_key = ''  # Replace with your actual Groq API key
+ 
+    # Initialize the Groq client
+    client = groq.Groq(api_key=api_key)
+ 
+    # Generate code based on the prompt using the Groq chat completion
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        model="llama-3.1-8b-instant",  # Example model, update as per your Groq setup
+        max_tokens=200,
+    )
+ 
+    # Extract the generated code from the response
+    generated_code = chat_completion.choices[0].message.content
+ 
+    return generated_code
+ 
+# Main execution
+user_input = input("Enter a prompt: ")
+generated_code = code_generator(user_input)
+ 
+# Print the generated code
+print("Generated Code:\n")
+print(generated_code)
+ 
+#python code for fibonacci series
+#java code for fibonacci series
+ 
+ 
