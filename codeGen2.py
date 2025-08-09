@@ -10,14 +10,15 @@
 
 
 import os
-import requests
 from dotenv import load_dotenv
+import groq
 
 load_dotenv()
 
-groqApiKey = os.getenv("GROQ_API_KEY")
-groqApiUrl = "https://api.groq.com/openai/v1/chat/completions"
-modelName = "llama-3.1-8b-instant" 
+apiKey = os.getenv("GROQ_API_KEY")
+modelName = "llama-3.1-8b-instant"
+
+client = groq.Groq(api_key=apiKey)
 
 def getRetailPrompt():
     print("\nEnter a retail-related Python coding task you need help with.")
@@ -29,32 +30,26 @@ def getRetailPrompt():
     return userPrompt.strip()
 
 def generateRetailCode(userPrompt):
-    headers = {
-        "Authorization": f"Bearer {groqApiKey}",
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "model": modelName,
-        "messages": [
-            {"role": "system", "content": "You are a helpful assistant that generates clean Python code for retail applications."},
-            {"role": "user", "content": f"Write Python code for the following retail task: {userPrompt}. Add helpful comments in the code."}
-        ],
-        "temperature": 0.4
-    }
-
     try:
-        res = requests.post(groqApiUrl, headers=headers, json=data)
-        res.raise_for_status()
-        response = res.json()
-        return response["choices"][0]["message"]["content"]
-
-    except requests.exceptions.HTTPError as httpErr:
-        print(f"HTTP error: {httpErr}")
-        print("📬 Response content:", res.text)
-    except Exception as err:
-        print(f"Something went wrong: {err}")
-    return None
+        chatCompletion = client.chat.completions.create(
+            model=modelName,
+            max_tokens=400,
+            temperature=0.4,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant that generates clean Python code for retail applications."
+                },
+                {
+                    "role": "user",
+                    "content": f"Write Python code for the following retail task: {userPrompt}. Add helpful comments in the code."
+                }
+            ]
+        )
+        return chatCompletion.choices[0].message.content
+    except Exception as e:
+        print("Error:", str(e))
+        return None
 
 def startInteractiveTool():
     print("Welcome to the Retail Code Generator Tool using Groq API!")
@@ -74,3 +69,4 @@ def startInteractiveTool():
             print("Could not generate code. Please check your prompt or API key.")
 
 startInteractiveTool()
+

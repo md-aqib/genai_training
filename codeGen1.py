@@ -7,15 +7,20 @@
 #             3. Flexible accommodation of various insurance products 
 # 	Target Users: Insurance actuaries and developers, without requiring deep programming knowledge
 
+#USING BOTH GRQ API and GROQ PACKAGE
 import os
-import requests
+# import requests
 from dotenv import load_dotenv
+from groq import Groq
 
 load_dotenv()
 
 groqApiKey = os.getenv("GROQ_API_KEY")
 print("MMMM", groqApiKey)
-groqApiUrl = "https://api.groq.com/openai/v1/chat/completions"
+modelName = "llama-3.1-8b-instant"
+# groqApiUrl = "https://api.groq.com/openai/v1/chat/completions"
+
+client = Groq(api_key=groqApiKey)
 
 def generatePremiumCode(params):
     prompt = f"""
@@ -31,24 +36,31 @@ def generatePremiumCode(params):
     Use basic logic and add some comments to explain the steps.
     """
 
-    headers = {
-        "Authorization": f"Bearer {groqApiKey}",
-        "Content-Type": "application/json"
-    }
-
     data = {
-        "model": "llama-3.1-8b-instant",
         "messages": [
-            {"role": "system", "content": "You are a helpful assistant who writes simple insurance-related Python functions."},
-            {"role": "user", "content": prompt}
+            {
+                "role": "system",
+                "content": "You are a helpful assistant who writes simple insurance-related Python functions."
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            }
         ],
-        "temperature": 0.4
+        "model": modelName,
+        "max_tokens": 400
     }
 
-    res = requests.post(groqApiUrl, headers=headers, json=data)
-    res.raise_for_status()
+    # headers = {
+    #     "Authorization": f"Bearer {groqApiKey}",
+    #     "Content-Type": "application/json"
+    # }
+    # chat_completion = requests.post(groqApiUrl, headers=headers, json=data)
+    # chat_completion.raise_for_status()
+    # return chat_completion.json()["choices"][0]["message"]["content"]
 
-    return res.json()["choices"][0]["message"]["content"]
+    chat_completion = client.chat.completions.create(**data)
+    return chat_completion.choices[0].message.content
 
 userInput = {
     "product_type": "Health Insurance",

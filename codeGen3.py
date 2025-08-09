@@ -10,14 +10,15 @@
 #     • "Implement a function to generate a bank statement for a given period."
 
 import os
-import requests
 from dotenv import load_dotenv
+import groq
 
 load_dotenv()
 
-groqApiKey = os.getenv("GROQ_API_KEY")
-groqApiUrl = "https://api.groq.com/openai/v1/chat/completions"
+apiKey = os.getenv("GROQ_API_KEY")
 modelName = "llama-3.1-8b-instant"
+
+client = groq.Groq(api_key=apiKey)
 
 def getUserPrompt():
     print("\nPlease enter a banking-related coding task.")
@@ -28,33 +29,42 @@ def getUserPrompt():
     return input("Enter your prompt (or type 'exit' to quit): ").strip()
 
 def generateBankingCode(userPrompt):
-    headers = {
-        "Authorization": f"Bearer {groqApiKey}",
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "model": modelName,
-        "messages": [
-            {"role": "system", "content": "You are a helpful assistant that generates clean Python code for banking applications."},
-            {"role": "user", "content": f"Write Python code for the following banking task: {userPrompt}. Add helpful comments."}
-        ],
-        "temperature": 0.4
-    }
-
     try:
-        res = requests.post(groqApiUrl, headers=headers, json=data)
-        res.raise_for_status()
-        return res.json()["choices"][0]["message"]["content"]
-    except requests.exceptions.HTTPError as httpErr:
-        print("HTTP Error:", httpErr)
-        print("Response:", res.text)
+        chatCompletion = client.chat.completions.create(
+            model=modelName,
+            temperature=0.4,
+            max_tokens=400,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant that generates clean Python code for banking applications."
+                },
+                {
+                    "role": "user",
+                    "content": f"Write Python code for the following banking task: {userPrompt}. Add helpful comments."
+                }
+            ]
+        )
+        return chatCompletion.choices[0].message.content
     except Exception as e:
-        print("Unexpected error:", e)
-    return None
+        print("Error:", e)
+        return None
 
 def runBankingTool():
     print("Welcome to the Banking Code Generator using Groq API")
     while True:
         userPrompt = getUserPrompt()
-        if userPrompt.lower() in ['exit',]()
+        if userPrompt.lower() in ['exit', 'quit']:
+            print("Exiting...")
+            break
+
+        print("\nGenerating code... please wait...\n")
+        generatedCode = generateBankingCode(userPrompt)
+
+        if generatedCode:
+            print("Here's your generated Python code:\n")
+            print(generatedCode)
+        else:
+            print("Could not generate code. Please check your prompt or API key.")
+
+runBankingTool()
